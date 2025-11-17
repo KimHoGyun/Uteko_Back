@@ -30,7 +30,6 @@ public class ApiClient {
 
         LottoApiResponse response = callApi(latestDrwNo);
 
-        // API 결과가 아직 없으면(fail) 이전 회차를 조회
         if (response == null || !"success".equals(response.getReturnValue())) {
             log.info("{}회차 결과 없음. 이전 회차 조회 시도", latestDrwNo);
             latestDrwNo--;
@@ -55,7 +54,6 @@ public class ApiClient {
         try {
             log.info("API 호출 시작: {}회차", drwNo);
 
-            // String으로 응답받기
             String responseBody = restTemplate.getForObject(API_URL, String.class, drwNo);
 
             if (responseBody == null || responseBody.isEmpty()) {
@@ -65,7 +63,6 @@ public class ApiClient {
 
             log.info("API 원본 응답: {}", responseBody.substring(0, Math.min(200, responseBody.length())));
 
-            // JSON 파싱 시도
             LottoApiResponse response = objectMapper.readValue(responseBody, LottoApiResponse.class);
 
             if (response != null) {
