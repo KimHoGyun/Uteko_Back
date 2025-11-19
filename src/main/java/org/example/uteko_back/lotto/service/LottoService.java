@@ -27,17 +27,14 @@ public class LottoService {
         return userLottoStrings.stream()
                 .map(lottoString -> {
                     try {
-                        // 3. java-calculator-8의 문자열 파싱 로직 적용
                         Lotto userLotto = parseLottoString(lottoString);
 
-                        // 4. java-lotto-8의 등수 계산 로직 적용
                         int matchCount = userLotto.countMatch(winningLotto);
                         boolean bonusMatch = userLotto.contains(bonusNumber);
                         Rank rank = Rank.valueOf(matchCount, bonusMatch);
 
                         return new LottoResultDto(lottoString, rank, rank.getPrizeMoney(), null);
                     } catch (IllegalArgumentException e) {
-                        // 파싱 또는 유효성 검사 실패 시
                         return new LottoResultDto(lottoString, Rank.MISS, 0L, e.getMessage());
                     }
                 })
@@ -52,10 +49,9 @@ public class LottoService {
         try {
             List<Integer> numbers = Arrays.stream(lottoString.split(","))
                     .map(String::trim)
-                    .map(Integer::parseInt) // NumberFormatException 발생 가능
+                    .map(Integer::parseInt)
                     .collect(Collectors.toList());
 
-            // Lotto 도메인 객체 생성을 통한 유효성 검사 (6개, 중복, 범위)
             return new Lotto(numbers);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("로또 번호는 숫자여야 합니다.");

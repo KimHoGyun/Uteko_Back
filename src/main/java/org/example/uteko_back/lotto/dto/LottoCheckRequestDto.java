@@ -5,7 +5,6 @@ import java.util.*;
 public class LottoCheckRequestDto {
     private List<String> userLottoStrings;
 
-        // Getter와 Setter
     public List<String> getUserLottoStrings() {
         return userLottoStrings;
     }
