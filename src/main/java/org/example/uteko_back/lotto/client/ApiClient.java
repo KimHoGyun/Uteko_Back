@@ -30,6 +30,7 @@ public class ApiClient {
 
         LottoApiResponse response = callApi(latestDrwNo);
 
+        // API 결과가 아직 없으면(fail) 이전 회차를 조회
         if (response == null || !"success".equals(response.getReturnValue())) {
             log.info("{}회차 결과 없음. 이전 회차 조회 시도", latestDrwNo);
             latestDrwNo--;
@@ -47,13 +48,14 @@ public class ApiClient {
         }
 
         log.info("{}회차 당첨 번호 조회 성공", latestDrwNo);
-        return response.toWinningLotto();
+        return response.toWinningLotto(latestDrwNo);
     }
 
     private LottoApiResponse callApi(long drwNo) {
         try {
             log.info("API 호출 시작: {}회차", drwNo);
 
+            // String으로 응답받기
             String responseBody = restTemplate.getForObject(API_URL, String.class, drwNo);
 
             if (responseBody == null || responseBody.isEmpty()) {
@@ -61,12 +63,13 @@ public class ApiClient {
                 return null;
             }
 
-            log.info("API 원본 응답: {}", responseBody.substring(0, Math.min(200, responseBody.length())));
+            log.info("API 원본 응답 (처음 200자): {}", responseBody.substring(0, Math.min(200, responseBody.length())));
 
             LottoApiResponse response = objectMapper.readValue(responseBody, LottoApiResponse.class);
 
             if (response != null) {
-                log.info("API 응답 성공: returnValue={}", response.getReturnValue());
+                log.info("API 응답 성공: returnValue={}, 1등상금={}",
+                        response.getReturnValue(), response.getFirstWinamnt());
             }
 
             return response;
@@ -81,13 +84,19 @@ public class ApiClient {
         return ChronoUnit.WEEKS.between(FIRST_DRAW_DATE, LocalDate.now()) + 1;
     }
 
+    // Service 레이어가 의존하는 내부 클래스
     public static class WinningLotto {
         private final Lotto winningLotto;
+        private final List<Integer> winningNumbersList;
         private final int bonusNumber;
+        private final long firstPrize;
+        private final long drwNo;
 
-        public WinningLotto(List<Integer> numbers, int bonus) {
+        public WinningLotto(List<Integer> numbers, int bonus, long firstPrize, long drwNo) {
             this.winningLotto = new Lotto(numbers);
+            this.winningNumbersList = new ArrayList<>(numbers);
 
+            // 보너스 번호 유효성 검사
             if (bonus < 1 || bonus > 45) {
                 throw new IllegalArgumentException("보너스 번호는 1~45 사이여야 합니다.");
             }
@@ -95,9 +104,14 @@ public class ApiClient {
                 throw new IllegalArgumentException("보너스 번호는 당첨 번호와 중복될 수 없습니다.");
             }
             this.bonusNumber = bonus;
+            this.firstPrize = firstPrize;
+            this.drwNo = drwNo;
         }
 
         public Lotto getWinningLotto() { return winningLotto; }
+        public List<Integer> getWinningNumbersList() { return new ArrayList<>(winningNumbersList); }
         public int getBonusNumber() { return bonusNumber; }
+        public long getFirstPrize() { return firstPrize; }
+        public long getDrwNo() { return drwNo; }
     }
 }

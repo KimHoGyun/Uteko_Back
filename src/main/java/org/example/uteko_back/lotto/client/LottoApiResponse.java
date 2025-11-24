@@ -7,31 +7,46 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LottoApiResponse {
     private String returnValue;
-    private Integer drwtNo1,drwtNo2,drwtNo3,drwtNo4,drwtNo5,drwtNo6;
+    private Integer drwtNo1, drwtNo2, drwtNo3, drwtNo4, drwtNo5, drwtNo6;
     private Integer bnusNo;
+    private Long firstWinamnt; // 1등 당첨금
 
-    public String getReturnValue() {return  returnValue;}
-    public void setReturnValue(String returnValue) {this.returnValue = returnValue;}
-    public Integer getDrwtNo1() {return drwtNo1;}
-    public void setDrwtNo1(Integer drwtNo1) {this.drwtNo1 = drwtNo1;}
-    public Integer getDrwtNo2() {return drwtNo2;}
-    public void setDrwtNo2(Integer drwtNo2) {this.drwtNo2 = drwtNo2;}
-    public Integer getDrwtNo3() {return drwtNo3;}
-    public void setDrwtNo3(Integer drwtNo3) {this.drwtNo3 = drwtNo3;}
-    public Integer getDrwtNo4() {return drwtNo4;}
-    public void setDrwtNo4(Integer drwtNo4) {this.drwtNo4 = drwtNo4;}
-    public Integer getDrwtNo5() {return drwtNo5;}
-    public void setDrwtNo5(Integer drwtNo5) {this.drwtNo5 = drwtNo5;}
-    public Integer getDrwtNo6() {return drwtNo6;}
-    public void setDrwtNo6(Integer drwtNo6) {this.drwtNo6 = drwtNo6;}
-    public Integer getBnusNo() {return bnusNo;}
-    public void setBnusNo(Integer bnusNo) {this.bnusNo = bnusNo;}
+    public String getReturnValue() { return returnValue; }
+    public void setReturnValue(String returnValue) { this.returnValue = returnValue; }
 
-    public ApiClient.WinningLotto toWinningLotto() {
+    public Integer getDrwtNo1() { return drwtNo1; }
+    public void setDrwtNo1(Integer drwtNo1) { this.drwtNo1 = drwtNo1; }
+
+    public Integer getDrwtNo2() { return drwtNo2; }
+    public void setDrwtNo2(Integer drwtNo2) { this.drwtNo2 = drwtNo2; }
+
+    public Integer getDrwtNo3() { return drwtNo3; }
+    public void setDrwtNo3(Integer drwtNo3) { this.drwtNo3 = drwtNo3; }
+
+    public Integer getDrwtNo4() { return drwtNo4; }
+    public void setDrwtNo4(Integer drwtNo4) { this.drwtNo4 = drwtNo4; }
+
+    public Integer getDrwtNo5() { return drwtNo5; }
+    public void setDrwtNo5(Integer drwtNo5) { this.drwtNo5 = drwtNo5; }
+
+    public Integer getDrwtNo6() { return drwtNo6; }
+    public void setDrwtNo6(Integer drwtNo6) { this.drwtNo6 = drwtNo6; }
+
+    public Integer getBnusNo() { return bnusNo; }
+    public void setBnusNo(Integer bnusNo) { this.bnusNo = bnusNo; }
+
+    public Long getFirstWinamnt() { return firstWinamnt; }
+    public void setFirstWinamnt(Long firstWinamnt) { this.firstWinamnt = firstWinamnt; }
+
+    public ApiClient.WinningLotto toWinningLotto(long drwNo) {
         if (!"success".equals(this.returnValue)) {
             throw new RuntimeException("API 응답실패: " + this.returnValue);
         }
         List<Integer> numbers = List.of(drwtNo1, drwtNo2, drwtNo3, drwtNo4, drwtNo5, drwtNo6);
-        return new ApiClient.WinningLotto(numbers, this.bnusNo);
+
+        // 1등 상금이 없으면 기본값 사용
+        long firstPrize = (firstWinamnt != null) ? firstWinamnt : 2000000000L;
+
+        return new ApiClient.WinningLotto(numbers, this.bnusNo, firstPrize, drwNo);
     }
 }
